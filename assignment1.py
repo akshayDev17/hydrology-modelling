@@ -3,9 +3,7 @@ import numpy as np
 from matplotlib import path
 import matplotlib.pyplot as plt
 
-def giveMask():
-	#fileName = "Aqueduct_river_basins_TAPTI RIVER.shp"
-	fileName = "/home/laferrari/IIIT-H SEMESTERS/4-1/hydrological_modelling/assignment1/Aqueduct_river_basins_TAPTI RIVER.shp"
+def giveMask(fileName):
 	shape = gpd.read_file(fileName)
 	shapeArr = [i for i in shape.geometry]
 	x,y = shapeArr[0].exterior.coords.xy
@@ -37,6 +35,3 @@ def giveMask():
 	plt.figure(1)
 	plt.plot(x,y)
 	plt.show()
-
-if __name__ == '__main__':
-	giveMask()

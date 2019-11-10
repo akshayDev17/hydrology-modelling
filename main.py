@@ -1,5 +1,6 @@
 import os
-from tkinter import Tk, Menu, Button, Message, Toplevel, filedialog
+import assignment1
+from tkinter import Tk, Menu, Button, Message, Toplevel, filedialog, messagebox
 top = Tk()
 top.geometry("500x500")
 top.title("Course Project")
@@ -36,20 +37,36 @@ def about():
     msg.pack()
     about_window.mainloop()
 
+def findExtension(name):
+    ans = ""
+    sz = len(name)
+    i = sz - 1
+    while i >= 0:
+        if name[i] == '.':
+            ans = ans[::-1]
+            return ans
+        else:
+            ans+=name[i]
+        i -= 1
+
 def get_file():
     cwd = os.getcwd()
     fileObj = filedialog.askopenfile(initialdir=cwd,
                            filetypes =(("Shape File", "*.shp"),("All Files","*.*")),
                            title = "Choose a file.")
     filename = fileObj.name
-    print(filename)
+    extension = findExtension(filename)
+    if extension == 'shp':
+        assignment1.giveMask(filename)
+    else:
+        messagebox.showerror("error", "The file selected was not a .shp file.")
 
 
     
 
 def shapeToMask():
     new_window = Toplevel(top)
-    new_window.geometry("200x200")
+    new_window.geometry("150x150")
     txt = Message(new_window, width=150, text="Choose a shape file")
     txt.pack()
     browse_button = Button(new_window, text="Browse..", command=get_file)
@@ -58,7 +75,7 @@ def shapeToMask():
 
   
 options = Menu(menubar, tearoff=0)
-options.add_command(label="Generate Mask file", command=shapeToMask)
+options.add_command(label="Generate Mask file...", command=shapeToMask)
 menubar.add_cascade(label="Options", menu=options)
 
 help = Menu(menubar, tearoff=0)  
