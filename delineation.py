@@ -9,9 +9,17 @@ import pandas as pd
 from osgeo import gdal
 from scipy.io import loadmat, savemat
 
-def get_delineated_watershed(dem_data, basin_data, tif_data, discharge_file, output_fname):
+import richdem as rd
 
-    dem = loadmat(dem_data)['DEM_filled']
+def get_delineated_watershed(dem_data, basin_data, tif_data, discharge_file, output_fname):
+    dem = 1
+    try:
+        dem = loadmat(dem_data)['DEM_filled']
+    except:
+        DEM = rd.LoadGDAL("DEM_clipped.tif")
+        DEM1 = rd.FillDepressions(DEM, epsilon=False, in_place=False)
+        DEM1_EPS = rd.FillDepressions(DEM1, epsilon=True, in_place=False)
+        dem = np.asarray(DEM1_EPS) 
     INCR_ROW, INCR_COL = [0, 1, 1, 1, -1, -1, -1, 0], [1, 0, -1, 1, -1, 1, 0, -1]
     D8_SIZE = 8
     NUM_ROWS, NUM_COLS = dem.shape[0], dem.shape[1]
@@ -95,7 +103,6 @@ def get_delineated_watershed(dem_data, basin_data, tif_data, discharge_file, out
         b = [(m_lat[i], m_long[i]) for i in range(len(m_lat))]
         
         c = [np.asarray(i) for i in list(set(a).intersection(b))]
-        #c = [np.asarray(i) for i in list(set(a))]
         if len(c) > 0:
             return [tuple(i + np.array([-temp+lat, -temp + long])) for i in c]
         else:
@@ -110,7 +117,7 @@ def get_delineated_watershed(dem_data, basin_data, tif_data, discharge_file, out
         sink_list.append(locate_sink(lat_row, long_col))
 
 
-    # Initialization of Visited Array and Watershed data for performing a DFS
+    # FOR DFS, we initialize the visited array and watershed masks
     visited = np.zeros((NUM_ROWS, NUM_COLS))
     watershed = np.zeros((NUM_ROWS, NUM_COLS))
 
