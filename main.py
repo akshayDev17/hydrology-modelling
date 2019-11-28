@@ -1,5 +1,6 @@
 import os
 import assignment1
+import delineation
 import rainfall_runoff
 import assignment_3
 from tkinter import Tk, Menu, Button, Message, Toplevel, filedialog, messagebox, Label, LEFT, X, RIGHT, Entry, StringVar, YES, W, E
@@ -134,35 +135,95 @@ def delineate_watershed():
     entry_1.grid(row=0, column=1)
 
     # line no. 155 for get_DEM_data
-    browse_button = Button(new_window, text="Browse..", command=get_DEM_data)
+    browse_button = Button(new_window, text="Browse..", command=lambda: get_DEM_data(0))
     browse_button.grid(row=0, column=2)
 
-    txt2 = Label(new_window, text="Choose a file to save the delineated watershed into...")
+    txt2 = Label(new_window, text="Choose filtered .mat data..")
     txt2.grid(row=1, column=0)
+
+    global mat_dem_fname
+    mat_dem_fname = StringVar()
+    entry_2 = Entry(new_window, width=100, textvariable=mat_dem_fname)
+    entry_2.grid(row=1, column=1)
+
+    button2 = Button(new_window, text="Browse..", command=lambda: get_DEM_data(1))
+    button2.grid(row=1, column=2)
+
+    txt3 = Label(new_window, text="Choose basin .mat data-file..")
+    txt3.grid(row=2, column=0)
+
+    global basin_mat_fname
+    basin_mat_fname = StringVar()
+    entry_3 = Entry(new_window, width=100, textvariable=basin_mat_fname)
+    entry_3.grid(row=2, column=1)
+
+    button3 = Button(new_window, text="Browse..", command=lambda: get_DEM_data(2))
+    button3.grid(row=2, column=2)
+
+    txt4 = Label(new_window, text="Choose discharge-location .csv data..")
+    txt4.grid(row=3, column=0)
+
+    global discharge_loc_fname
+    discharge_loc_fname = StringVar()
+    entry_4 = Entry(new_window, width=100, textvariable=discharge_loc_fname)
+    entry_4.grid(row=3, column=1)
+
+    button4 = Button(new_window, text="Browse..", command=lambda: get_DEM_data(3))
+    button4.grid(row=3, column=2)
+
+    txt5 = Label(new_window, text="Choose a file to save the delineated watershed into...")
+    txt5.grid(row=4, column=0)
 
     global del_shed_fname
     del_shed_fname = StringVar()
-    entry_2 = Entry(new_window, width=100, textvariable=del_shed_fname)
-    entry_2.grid(row=1, column=1)
+    entry_5 = Entry(new_window, width=100, textvariable=del_shed_fname)
+    entry_5.grid(row=4, column=1)
 
     # line no. 167 for save_watershed_data
-    browse_button2 = Button(new_window, text="Browse..", command=save_watershed_data)
-    browse_button2.grid(row=1, column=2)
+    browse_button5 = Button(new_window, text="Browse..", command=save_watershed_data)
+    browse_button5.grid(row=4, column=2)
 
     #line 171 has start_delineation
     confirm_button = Button(new_window, text="Delineate", command=lambda: start_delineation(new_window))
-    confirm_button.grid(row=2, column = 0, columnspan= 3)
+    confirm_button.grid(row=5, column=0, columnspan= 3)
 
-def get_DEM_data():
+def get_DEM_data(ip_type):
     cwd = os.getcwd()
-    fileObj = filedialog.askopenfile(initialdir=cwd,
-                           filetypes =(("DEM dataset .tif file", "*.tif"),("All Files","*.*")),
+
+    if ip_type == 0:
+        filetype = "DEM dataset .tif file"
+    elif ip_type == 1:
+        filetype = "cleaned DEM .mat file"
+    elif ip_type == 2:
+        filetype = "Basin .mat file"
+    elif ip_type == 3:
+        filetype = "Discharge location .csv file"
+
+    if ip_type == 1 or ip_type == 2:
+        fileObj = filedialog.askopenfile(initialdir=cwd,
+                           filetypes =((filetype, "*.mat"),("All Files","*.*")),
                            title = "Choose a file.")
+    elif ip_type == 0:
+        fileObj = filedialog.askopenfile(initialdir=cwd,
+                           filetypes =((filetype, "*.tif"),("All Files","*.*")),
+                           title = "Choose a file.")
+    elif ip_type == 3:
+        fileObj = filedialog.askopenfile(initialdir=cwd,
+                           filetypes =((filetype, "*.csv"),("All Files","*.*")),
+                           title = "Choose a file.")
+
     if fileObj is not None:
         file_name = fileObj.name
         extension = findExtension(file_name)
-        if extension == 'tif':
+        if extension == 'mat':
+            if ip_type == 1:
+                mat_dem_fname.set(file_name)
+            elif ip_type == 2:
+                basin_mat_fname.set(file_name)
+        elif extension == 'tif':
             dem_fname.set(file_name)
+        elif extension == 'csv':
+            discharge_loc_fname.set(file_name)
         else:
             messagebox.showerror("error", "File chosen was not a .tif file")
 
@@ -171,16 +232,25 @@ def save_watershed_data():
     del_shed_fname.set(dir_name)
 
 def start_delineation(curr_window):
-    dem_data = dem_fname.get()
+    ''' execute the main code of delineation from delineation.py '''
+
+    dem_data = mat_dem_fname.get()
+    basin_data = basin_mat_fname.get()
+    tif_data = dem_fname.get()
+    discharge_loc = discharge_loc_fname.get()
     save_fname = del_shed_fname.get()
 
-    ext1, ext2 = findExtension(dem_data), findExtension(save_fname)
+    ext1 = findExtension(dem_data)
+    ext2 = findExtension(basin_data)
+    ext3 = findExtension(tif_data)
+    ext4 = findExtension(discharge_loc)
+    ext5 = findExtension(save_fname)
 
-    if ext1 == 'tif' and ext2 == 'mat':
+    if ext1 == 'mat' and ext2 == 'mat' and ext3 == 'tif' and ext4 == 'csv' and ext5 == 'mat':
         # start executing delineation.py
-        print("YAYAYAYAYAY")
+        delineation.get_delineated_watershed(dem_data, basin_data, tif_data, discharge_loc, save_fname)
         # destroy window
-        # curr_window.destroy()
+        curr_window.destroy()
     else:
         messagebox.showerror("error", "Please check your input files")
 
