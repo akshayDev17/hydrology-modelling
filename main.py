@@ -3,11 +3,12 @@ import assignment1
 import delineation
 import rainfall_runoff
 import assignment_3
-from tkinter import Tk, Menu, Button, Message, Toplevel, filedialog, messagebox, Label, LEFT, X, RIGHT, Entry, StringVar, YES, W, E
+from tkinter import Tk, Menu, Button, Message, Toplevel, filedialog, messagebox, Label, LEFT, X, RIGHT, Entry, StringVar, YES, W, E, BOTH
 
 
 top = Tk()
-top.geometry("500x500")
+
+top.geometry("700x300")
 top.title("Course Project")
 menubar = Menu(top)
 
@@ -34,20 +35,39 @@ edit.add_command(label="Delete")
 edit.add_command(label="Select All")  
 menubar.add_cascade(label="Edit", menu=edit)
 
-def about():
+def about(ip_type):
     about_window = Toplevel(top)
     about_window.resizable(True, True)
-    asgn1 = Label(about_window, text="1. This program can generate a mask file by reading only the shape file of a basin.")
-    asgn1.grid(row=0, sticky=W)
+    title_text = ""
+    label_text = ""
+    if ip_type == 0:
+        title_text = "Instructions to Generate Mask File"
+        label_text = "1. Click on \"Options\" menu in the menubar.\n2. Select the \"Generate Mask Files\" option.\n"
+        label_text += "3. Choose a \".shp\" file, as requested. Remember that the corresponding .shx file should also be present.\n"
+        label_text += "4. Choose an output name for the mask file, the extension for the mask file should be png."
+    elif ip_type == 1:
+        title_text = "Instructions to Get Environmental Flows"
+        label_text = "1. Click on the \"Options\" menu in the menubar.\n2. Select the \"Generate Environmental Flows...\" option.\n"
+        label_text += "3. Choose a delineated basin file(.mat extension), precipitation data(.mat extension), discharge data(.xls file), and fill the output name that you want the plots to be saved in.\n"
+    elif ip_type == 2:
+        title_text = "Instructions to Get delineated Watershed"
+        label_text = "1. Click on the \"Options\" menu in the menubar.\n2. Select the \"Delineate Watershed...\" option.\n"
+        label_text += "3. Choose the basin DEM data as a .tif file, the filled data as a .mat file, the basin.mat data, discharge location .csv data."
+        label_text += "4. Enter the file name after clicking the \"browse\" button, to save the delineated watershed data as a .mat file."
+    elif ip_type == 3:
+        title_text = "Instructions to get rainfall-runoff plot"
+        label_text = "1. Click on the \"Options\" menu in the menubar.\n2. Select the \"Get predicted runoff values...\" option.\n"
+        label_text += "3. Choose the delineated-basin .mat file, precipitation data as a .mat file, discharge .xls data"
+        label_text += "and the file name you want to save the plot into.\n"
+        label_text += "4. The plot is of error-in-prediction vs. the predicted runoff value, for a given rainfall"
+    
+    about_window.title(title_text)
+    label_display = Label(about_window, text=label_text)
+    label_display.config(bg='black', fg='yellow')
+    labelfont = ('times', 20, 'bold')
+    label_display.config(font=labelfont)
+    label_display.pack()
 
-    asgn2_1 = Label(about_window, text="2. It can perform watershed delineation, with a DEM.tif DEM data file as the input.")
-    asgn2_1.grid(row=1, sticky=W)
-
-    asgn2_2 = Label(about_window, text="3. The functionality of rainfall-runoff model implemented as a data-driven model, also exists, with inputs being a .mat formatted precipitation data, delineated watershed formatted as a .mat file and discharge data formatted as an excel file.")
-    asgn2_2.grid(row=2, sticky=W)
-
-    asgn3 = Label(about_window, text="4. DQT plot can be generated, for low-flow analysis, by supplying a .mat precipitation file, .mat delineated watershed file, and discharge data as an excel file, D and T values.")
-    asgn3.grid(row=3, sticky=W)
 
     about_window.mainloop()
 
@@ -94,6 +114,7 @@ def get_mask_name():
 def shapeToMask():
     new_window = Toplevel(top)
     new_window.resizable(True, True)
+    new_window.title("Shape to Mask")
 
     txt = Label(new_window, text="Choose a shape file")
     txt.grid(row=0, column=0)
@@ -125,6 +146,7 @@ def shapeToMask():
 def delineate_watershed():
     new_window = Toplevel(top)
     new_window.resizable(True, True)
+    new_window.title("Delineate Watershed")
 
     txt1 = Label(new_window, text="Choose a .tif DEM data-set...")
     txt1.grid(row=0, column=0)
@@ -263,6 +285,7 @@ def runoff_model():
     ''' take input files from user '''
     new_window = Toplevel(top)
     new_window.resizable(True, True)
+    new_window.title("Rainfall-Runoff Model")
 
     txt1 = Label(new_window, text="Choose a .mat precipitation file...")
     txt1.grid(row=0, column=0, columnspan = 2)
@@ -354,6 +377,7 @@ def environment_flows():
     ''' take input files from user '''
     new_window = Toplevel(top)
     new_window.resizable(True, True)
+    new_window.title("Environmental Flows")
 
     txt1 = Label(new_window, text="Choose a .mat precipitation file...")
     txt1.grid(row=0, column=0, columnspan = 2)
@@ -516,7 +540,6 @@ def is_mat_valid(param):
         else:
             messagebox.showerror("error", "The file selected was not a proper .mat file.")
 
-
 options = Menu(menubar, tearoff=0)
 options.add_command(label="Generate Mask file...", command=shapeToMask)
 options.add_command(label="Generate Environmental Flows...", command=environment_flows)
@@ -524,10 +547,20 @@ options.add_command(label="Delineate Watershed...", command=delineate_watershed)
 options.add_command(label="Get Predicted runoff values...", command=runoff_model)
 menubar.add_cascade(label="Options", menu=options)
 
-help = Menu(menubar, tearoff=0)  
-help.add_command(label="About", command=about)  
-menubar.add_cascade(label="Help", menu=help)  
+help = Menu(menubar, tearoff=0)
+help.add_command(label="How to generate mask file", command=lambda: about(0))
+help.add_command(label="How to get environmental flows", command=lambda: about(1))
+help.add_command(label="How to get a delineated watershed", command=lambda: about(2))
+help.add_command(label="How to get rainfall-runoff model plot", command=lambda: about(3))  
+menubar.add_cascade(label="Help", menu=help)
+top.config(menu=menubar)
 
+top.resizable(True, True)
 
-top.config(menu=menubar)  
+main_help = Label(top, text='For instructions on how to use GUI, go to the Help menu.')
+main_help.config(bg='black', fg='yellow')
+labelfont = ('times', 20, 'bold')
+main_help.config(font=labelfont)
+main_help.pack(expand=YES, fill=BOTH)
+
 top.mainloop()  
