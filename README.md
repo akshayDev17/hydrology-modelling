@@ -10,3 +10,7 @@
 8. scipy: `sudo pip install scipy` or `conda install -c anaconda scipy`
 9. scikit-learn :  `sudo pip install scikit-learn` or  `conda install -c anaconda scikit-learn`
 
+### Usage:
+
+`python3 main.py`
+
